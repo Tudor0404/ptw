@@ -1,0 +1,2 @@
+const {makeRecipe}=require('ohm-js') -> import { makeRecipe } from 'ohm-js'
+module.exports=result -> export default result

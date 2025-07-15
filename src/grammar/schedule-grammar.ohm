@@ -1,0 +1,94 @@
+ScheduleGrammar {
+  // Top-level expression
+  Expression = ConditionExpression
+
+  // Condition expressions with explicit precedence levels
+  ConditionExpression = OrExpression
+
+  OrExpression =
+    | OrExpression "OR" AndExpression      -- or
+    | OrExpression "," AndExpression       -- commaOr
+    | AndExpression
+
+  AndExpression =
+    | AndExpression "AND" NotExpression    -- and
+    | AndExpression "." NotExpression      -- dotAnd
+    | NotExpression
+
+  NotExpression =
+    | "NOT" PrimaryExpression              -- not
+    | "!" PrimaryExpression                -- bangNot
+    | OptimizationExpression
+
+  OptimizationExpression =
+    | "#" NotOperation                     -- noMergeNot
+    | "~" NotOperation                     -- forceMergeNot
+    | "#" PrimaryExpression                -- noMerge
+    | "~" PrimaryExpression                -- forceMerge
+    | PrimaryExpression
+
+  NotOperation =
+    | "NOT" PrimaryExpression              -- not
+    | "!" PrimaryExpression                -- bangNot
+
+  PrimaryExpression =
+    | ParenthesisExpression                -- paren
+    | ValueBlock                           -- value
+
+  ParenthesisExpression = "(" ConditionExpression ")"
+
+  // Value blocks directly corresponding to your class hierarchy
+  ValueBlock =
+    | TimeBlock
+    | WeekDayBlock
+    | DateBlock
+    | MonthBlock
+    | MonthDayBlock
+    | YearBlock
+    | DateTimeBlock
+    | ScheduleBlock
+
+  // Time blocks
+  TimeBlock = #("T" "[") nonemptyListOf<TimeRange, ","> "]"
+
+  TimeRange = Time ".." Time
+
+  Time = MillisecondTime
+  	| SecondTime
+    | HourTime
+
+  HourTime = digit digit
+  SecondTime = digit digit ":" digit digit
+  MillisecondTime = digit digit ":" digit digit ":" digit digit digit
+
+  WeekDayBlock = #("WD" "[") ValueList "]"
+  DateBlock = #("D" "[") DateList "]"
+  MonthBlock = #("M" "[") ValueList "]"
+  MonthDayBlock = #("MD" "[") ValueList "]"
+  YearBlock = #("Y" "[") ValueList "]"
+  DateTimeBlock = #("DT" "[") DateTimeList "]"
+
+  DateTimeList = nonemptyListOf<DateTimeRange, ",">
+  DateTimeRange = DateTime ".." DateTime
+  DateTime = date "T" MillisecondTime
+  	| date "T" SecondTime
+  date = digit digit digit digit "-" digit digit "-" digit digit  // YYYY-MM-DD
+
+  // Schedule reference block
+  ScheduleBlock = #("REF" "[") ReferenceId "]"
+  ReferenceId = alnum+
+
+  // Value lists and expressions
+  ValueList = nonemptyListOf<ValueExpr, ",">
+
+  ValueExpr =
+    | digit+ ".." digit+                  -- range
+    | digit+ "n" ("+" | "-") digit+      -- algebraic
+    | digit+                             -- number
+
+ DateList = nonemptyListOf<DateExpr, ",">
+
+ DateExpr = date ".." date -- range
+    | date -- single
+
+}
