@@ -55,11 +55,13 @@ ScheduleGrammar {
 
   Time = MillisecondTime
   	| SecondTime
+    | MinuteTime
     | HourTime
 
-  HourTime = digit digit
-  SecondTime = digit digit ":" digit digit
-  MillisecondTime = digit digit ":" digit digit ":" digit digit digit
+  HourTime = digit digit?
+  MinuteTime = digit digit? ":" digit digit?
+  SecondTime = digit digit? ":" digit digit? ":" digit digit?
+  MillisecondTime = digit digit? ":" digit digit? ":" digit digit? "." digit digit? digit?
 
   WeekDayBlock = #("WD" "[") ValueList "]"
   DateBlock = #("D" "[") DateList "]"

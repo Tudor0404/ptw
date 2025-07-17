@@ -381,17 +381,25 @@ class ExpressionParser {
                 return hours * 3600000
             },
 
-            SecondTime(h1, h2, _, m1, m2) {
+            MinuteTime(h1, h2, colon, m1, m2) {
                 const hours = Number.parseInt(h1.sourceString + h2.sourceString, 10)
                 const minutes = Number.parseInt(m1.sourceString + m2.sourceString, 10)
                 return hours * 3600000 + minutes * 60000
             },
 
-            MillisecondTime(h1, h2, _, m1, m2, __, s1, s2, s3) {
+            SecondTime(h1, h2, colon1, m1, m2, colon2, s1, s2) {
                 const hours = Number.parseInt(h1.sourceString + h2.sourceString, 10)
                 const minutes = Number.parseInt(m1.sourceString + m2.sourceString, 10)
-                const seconds = Number.parseInt(s1.sourceString + s2.sourceString + s3.sourceString, 10)
-                return hours * 3600000 + minutes * 60000 + seconds
+                const seconds = Number.parseInt(s1.sourceString + s2.sourceString, 10)
+                return hours * 3600000 + minutes * 60000 + seconds * 1000
+            },
+
+            MillisecondTime(h1, h2, colon1, m1, m2, colon2, s1, s2, dot, ms1, ms2, ms3) {
+                const hours = Number.parseInt(h1.sourceString + h2.sourceString, 10)
+                const minutes = Number.parseInt(m1.sourceString + m2.sourceString, 10)
+                const seconds = Number.parseInt(s1.sourceString + s2.sourceString, 10)
+                const milliseconds = Number.parseInt(ms1.sourceString + ms2.sourceString + ms3.sourceString, 10)
+                return hours * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds
             },
 
             WeekDayBlock(_, _open, values, _close) {
