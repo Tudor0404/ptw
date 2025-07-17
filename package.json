@@ -54,6 +54,9 @@
     "clean": "rimraf dist",
     "release": "bumpp && pnpm build && pnpm publish"
   },
+  "peerDependencies": {
+    "ohm-js": "^17.0.0"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^4.13.0",
     "@ohm-js/cli": "^2.0.0",
@@ -66,9 +69,6 @@
     "typescript": "^5.8.3",
     "vitepress": "^1.6.3",
     "vitest": "^3.1.3"
-  },
-  "peerDependencies": {
-    "ohm-js": "^17.0.0"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged"

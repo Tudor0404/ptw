@@ -1,79 +1,63 @@
-# TypeScript Library Starter Template
+# PTW - Schedule Expression Parser
 
-[![GitHub Release Version](https://img.shields.io/github/v/release/starter-collective/starter-lib-ts?label=Release&color=%42b883)](https://github.com/starter-collective/starter-lib-ts/releases)
-[![NPM Version](https://img.shields.io/npm/v/starter-lib-ts?style=flat&label=npm&color=%42b883)](https://www.npmjs.com/package/starter-lib-ts)
-[![Build Status](https://github.com/starter-collective/starter-lib-ts/actions/workflows/ci.yml/badge.svg?branch=main&color=%42b883)](https://github.com/starter-collective/starter-lib-ts/actions/workflows/ci.yml)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/6b182d34-7d30-4206-aad9-9789d1c8ed11/deploy-status)](https://app.netlify.com/sites/starter-lib-ts/deploys)
-
-TypeScript library starter template, provides VitePress documentation, supports building ESM, CJS and IIFE formats.
-
-- [Live Demo](https://starter-lib-ts.netlify.app/)
-- [Play on Stackblitz](https://stackblitz.com/github/starter-collective/starter-lib-ts)
+A TypeScript library for parsing and evaluating schedule expressions with support for complex time-based rules and
+conditions.
 
 ## Features
 
-- Build package with [tsup](https://tsup.egoist.dev/) - Bundle your TypeScript library with no config.
-- Out-of-the-box unit testing with [Vitest](https://github.com/vitest-dev/vitest).
-- [VitePress](https://vitepress.dev/) documentation - Deploy on [Netlify](https://app.netlify.com/) with zero-config, supports other deployment methods as well.
-- Manage versions using the [bumpp](https://github.com/antfu-collective/bumpp), and publish to npm with zero-configPublish to [npm](https://www.npmjs.com) with zero-config.
+- **Expression Parsing**: Parse human-readable schedule expressions into structured objects
+- **Field Types**: Support for time, date, weekday, month, and year fields
+- **Logical Operations**: AND, OR, NOT operations for complex scheduling rules
+- **Result Types**: Type-safe evaluation with proper error handling
+- **Caching**: Built-in caching for performance optimization
+- **References**: Support for reusable schedule expressions
 
-## Usage
+## Quick Start
 
-[Create a repo](https://github.com/starter-collective/starter-lib-ts/generate) from this template on GitHub.
+```typescript
+import {parseExpression, Schedule} from 'ptw'
 
-```bash
-git clone <git remote url>
+// Parse a schedule expression
+const expression = parseExpression('T[9:00..17:00] & WD[1..5]') // Work hours on weekdays
+
+// Create a schedule and evaluate
+const schedule = new Schedule()
+const result = expression.evaluate(startTime, endTime, schedule)
+
+if (result.ok) {
+    console.log('Matching time ranges:', result.value)
+} else {
+    console.error('Evaluation error:', result.error)
+}
 ```
 
-Install npm dependencies.
+## Field Types
+
+- **TimeField**: `T[9:00..17:00]` - Time ranges within a day
+- **DateField**: `D[2024-01-01..2024-01-31]` - Date ranges
+- **WeekDayField**: `WD[1..5]` - Days of the week (1=Monday, 7=Sunday)
+- **MonthField**: `M[1..12]` - Months of the year
+- **YearField**: `Y[2024]` - Years
+- **MonthDayField**: `MD[1..31]` - Days within a month
+
+## Logical Operations
+
+- **AND**: `T[9:00..17:00] & WD[1..5]` - Both conditions must be true
+- **OR**: `T[9:00..12:00] | T[13:00..17:00]` - Either condition can be true
+- **NOT**: `!WD[6..7]` - Negates the condition
+
+## Installation
 
 ```bash
-cd starter-lib-ts # Or your project directory
-
-pnpm i # If you don't have pnpm installed, run: npm install -g pnpm
+npm install ptw
+# or
+pnpm install ptw
 ```
 
-Just run `dev` script to build your files.
+## Documentation
 
-```bash
-pnpm dev
-```
-
-Open documentation for the library, you can run:
-
-```bash
-pnpm docs:dev
-```
-
-To build the library, you can run:
-
-```bash
-pnpm build
-```
-
-If you want to publish it, you can run:
-
-```bash
-pnpm release
-```
-
-## Clean Template
-
-If you prefer to do it manually with the cleaner git history:
-
-```bash
-npx degit starter-collective/starter-lib-ts starter-lib-ts
-
-cd starter-lib-ts
-
-pnpm i # If you don't have pnpm installed, run: npm install -g pnpm
-```
-
-When you use this template, try follow the checklist to update your info properly:
-
-- [ ] Change the package name in `package.json` and the global `iife` variable in `tsup.config.ts`.
-- [ ] Update the website information, favicon, and logo icons in `docs/*`.
+Full documentation is coming soon. This library is actively being developed.
 
 ## License
 
-[MIT License](./LICENSE) © 2024-PRESENT [Kieran Wang](https://github.com/kieranwv/)
+MIT © Tudor Popescu
