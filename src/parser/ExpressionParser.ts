@@ -170,6 +170,7 @@ class ExpressionParser {
      * Initialize the semantics for the grammar
      */
     private initializeSemantics() {
+        const parser = this
         const actionDict: ScheduleGrammarActionDict<
             | IBlock
             | DateTimeRange
@@ -193,11 +194,11 @@ class ExpressionParser {
             },
 
             OrExpression_or(left, _, right) {
-                return this.handleOrExpression(left, right)
+                return parser.handleOrExpression(left, right)
             },
 
             OrExpression_commaOr(left, _, right) {
-                return this.handleOrExpression(left, right)
+                return parser.handleOrExpression(left, right)
             },
 
             OrExpression(expr) {
@@ -205,11 +206,11 @@ class ExpressionParser {
             },
 
             AndExpression_and(left, _, right) {
-                return this.handleAndExpression(left, right)
+                return parser.handleAndExpression(left, right)
             },
 
             AndExpression_dotAnd(left, _, right) {
-                return this.handleAndExpression(left, right)
+                return parser.handleAndExpression(left, right)
             },
 
             AndExpression(expr) {
@@ -217,11 +218,11 @@ class ExpressionParser {
             },
 
             NotExpression_not(_, expr) {
-                return this.handleNotExpression(expr)
+                return parser.handleNotExpression(expr)
             },
 
             NotExpression_bangNot(_, expr) {
-                return this.handleNotExpression(expr)
+                return parser.handleNotExpression(expr)
             },
 
             NotExpression(expr) {
@@ -315,11 +316,11 @@ class ExpressionParser {
             },
 
             NotOperation_not(_, expr) {
-                return this.handleNotExpression(expr)
+                return parser.handleNotExpression(expr)
             },
 
             NotOperation_bangNot(_, expr) {
-                return this.handleNotExpression(expr)
+                return parser.handleNotExpression(expr)
             },
 
             NotOperation(expr) {
@@ -339,12 +340,12 @@ class ExpressionParser {
             },
 
             ParenthesisExpression(_, expr, __) {
-                const oldParenState = this.parserState.inParentheses
-                this.parserState.inParentheses = true
+                const oldParenState = parser.parserState.inParentheses
+                parser.parserState.inParentheses = true
 
                 const result = expr.eval()
 
-                this.parserState.inParentheses = oldParenState
+                parser.parserState.inParentheses = oldParenState
 
                 return {
                     type: 'ParenthesizedBlock',
