@@ -37,7 +37,7 @@ PTW uses a **block-based architecture** where everything is a composable block:
 Blocks are the fundamental building units in PTW. Every parsed expression returns a block that can be evaluated. There are three main types of blocks:
 
 - **Field Blocks**: Match against specific values (TimeField, DateField, WeekDayField, etc.)
-- **Condition Blocks**: Apply logical operations (AndBlock, OrBlock, NotBlock)  
+- **Condition Blocks**: Apply logical operations (AndBlock, OrBlock, NotBlock)
 - **Reference Blocks**: Reference other expressions stored in a Schedule
 
 ### **Expressions and Parsing**
@@ -62,7 +62,8 @@ Blocks can be evaluated in two ways:
 ```typescript
 // Parse and evaluate directly
 const expression = parseExpression('T[9:00..17:00] AND WD[1..5]')
-if (!expression.ok) return
+if (!expression.ok)
+  return
 
 // Evaluate the block directly
 const result = expression.value.evaluate(startTime, endTime)
@@ -71,7 +72,7 @@ const result = expression.value.evaluate(startTime, endTime)
 const result2 = expression.value.evaluate(startTime, endTime, schedule)
 ```
 
-### **Schedule-based Evaluation**  
+### **Schedule-based Evaluation**
 ```typescript
 // Store expressions in a schedule
 const schedule = new Schedule()

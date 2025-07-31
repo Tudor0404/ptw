@@ -10,13 +10,13 @@ logical operations, and advanced scheduling patterns.
 ## Quick Example
 
 ```typescript
-import {parseExpression, Schedule} from 'ptw'
+import { parseExpression, Schedule } from 'ptw'
 
 // Parse business hours expression
 const expression = parseExpression('T[9:00..17:00] AND WD[1..5]')
 
 if (!expression.ok) {
-    return false;
+  return false
 }
 
 // Evaluate for January 2024 (UTC)
@@ -109,7 +109,7 @@ npm install ptw
 PTW is written in TypeScript and provides comprehensive type definitions for safe, type-checked schedule operations.
 
 ```typescript
-import type {IBlock, DateTimeRange, Result} from 'ptw'
+import type { DateTimeRange, IBlock, Result } from 'ptw'
 
 const result: Result<IBlock, Error> = parseExpression('T[9:00..17:00]')
 ```

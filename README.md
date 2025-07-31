@@ -22,7 +22,7 @@ does not perform timezone conversions - it operates on absolute time values.
 ## Quick Start
 
 ```typescript
-import {parseExpression, Schedule} from 'ptw'
+import { parseExpression, Schedule } from 'ptw'
 
 // Parse a schedule expression
 const expression = parseExpression('T[9:00..17:00] AND WD[1..5]') // Work hours on weekdays
@@ -33,15 +33,17 @@ const startTime = Date.UTC(2024, 0, 1) // January 1, 2024 UTC
 const endTime = Date.UTC(2024, 0, 31, 23, 59, 59, 999) // January 31, 2024 UTC
 
 if (expression.ok) {
-    const result = expression.value.evaluate(startTime, endTime, schedule)
+  const result = expression.value.evaluate(startTime, endTime, schedule)
 
-    if (result.ok) {
-        console.log('Matching time ranges:', result.value)
-    } else {
-        console.error('Evaluation error:', result.error)
-    }
-} else {
-    console.error('Parse error:', expression.error)
+  if (result.ok) {
+    console.log('Matching time ranges:', result.value)
+  }
+  else {
+    console.error('Evaluation error:', result.error)
+  }
+}
+else {
+  console.error('Parse error:', expression.error)
 }
 ```
 
@@ -73,11 +75,11 @@ const result = expression.value.evaluate(utcTimestamp, utcTimestamp + 86400000, 
 
 // Convert results back to local time for display
 if (result.ok) {
-    result.value.forEach(range => {
-        const startLocal = new Date(range.start).toLocaleString()
-        const endLocal = new Date(range.end).toLocaleString()
-        console.log(`Range: ${startLocal} to ${endLocal}`)
-    })
+  result.value.forEach((range) => {
+    const startLocal = new Date(range.start).toLocaleString()
+    const endLocal = new Date(range.end).toLocaleString()
+    console.log(`Range: ${startLocal} to ${endLocal}`)
+  })
 }
 ```
 
@@ -209,8 +211,8 @@ parseExpression('Y[2n+2024]')
 ```typescript
 // Complex schedule: Work hours excluding lunch, but including Saturday mornings
 const complexSchedule = parseExpression(`
-    (T[9:00..12:00] OR T[13:00..17:00]) AND WD[1..5] 
-    OR 
+    (T[9:00..12:00] OR T[13:00..17:00]) AND WD[1..5]
+    OR
     T[9:00..12:00] AND WD[6]
 `)
 ```
@@ -231,7 +233,7 @@ const meetingTimes = parseExpression('REF[core-hours] AND WD[1..5]')
 
 ```typescript
 // Example: Converting from Eastern Time to UTC for PTW
-import {parseExpression} from 'ptw'
+import { parseExpression } from 'ptw'
 
 // Business hours in Eastern Time: 9 AM - 5 PM ET
 // Convert to UTC (ET is UTC-5 in winter, UTC-4 in summer)
@@ -249,12 +251,13 @@ const endTime = Date.UTC(2024, 0, 31, 23, 59, 59, 999) // January 31, 2024 23:59
 const result = parseExpression('invalid expression')
 
 if (result.ok) {
-    // Success case
-    const expression = result.value
-    // Use expression...
-} else {
-    // Error case
-    console.error('Parse failed:', result.error.message)
+  // Success case
+  const expression = result.value
+  // Use expression...
+}
+else {
+  // Error case
+  console.error('Parse failed:', result.error.message)
 }
 ```
 
@@ -312,11 +315,11 @@ PTW is written in TypeScript and provides comprehensive type definitions:
 
 ```typescript
 import type {
-    IBlock,
-    IField,
-    DateTimeRange,
-    Result,
-    MergeState
+  DateTimeRange,
+  IBlock,
+  IField,
+  MergeState,
+  Result
 } from 'ptw'
 
 // All functions return Result types for safe error handling
@@ -324,7 +327,7 @@ const result: Result<IBlock, Error> = parseExpression('T[9:00..17:00]')
 
 // Type-safe field operations
 const timeField: TimeField = new TimeField()
-timeField.addValues([{start: 32400000, end: 61200000}]) // UTC milliseconds
+timeField.addValues([{ start: 32400000, end: 61200000 }]) // UTC milliseconds
 ```
 
 ## License
