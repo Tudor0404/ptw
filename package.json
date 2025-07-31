@@ -49,12 +49,21 @@
     "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint-staged": "lint-staged",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
     "release": "bumpp && npm build && npm publish"
   },
   "peerDependencies": {
     "ohm-js": "^17.0.0"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix"
+    ]
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npm run lint-staged"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.13.0",
