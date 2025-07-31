@@ -1,4 +1,4 @@
-# PTW - Precise Time Windows
+# PTW - Predicate Time Windows
 
 A powerful TypeScript library for parsing and evaluating complex schedule expressions with support for time-based rules,
 logical operations, and advanced scheduling patterns.
