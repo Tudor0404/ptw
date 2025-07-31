@@ -81,7 +81,7 @@ parseExpression('WD[1..5] AND NOT REF[holidays]')
 ### Quarterly Meetings
 
 ```typescript
-parseExpression('M[3,6,9,12] AND MD[1..7] AND WD[1] AND T[14:00]')
+parseExpression('M[3,6,9,12] AND MD[1..7] AND WD[1] AND T[14:00..15:00]')
 ```
 
 ### Rotating Schedules
