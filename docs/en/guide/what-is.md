@@ -1,6 +1,6 @@
 # What is PTW?
 
-PTW (Precise Time Windows) is a powerful TypeScript library for parsing and evaluating complex schedule expressions with
+PTW (Predicate Time Windows) is a powerful TypeScript library for parsing and evaluating complex schedule expressions with
 support for time-based rules, logical operations, and advanced scheduling patterns.
 
 **Important**: PTW is timezone-agnostic. All timestamps should be provided in UTC milliseconds since epoch. The library
