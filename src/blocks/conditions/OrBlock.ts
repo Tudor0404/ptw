@@ -4,11 +4,21 @@ import {success} from '../../utils/result'
 import {sweepLineUnion} from '../../utils/sweepLine'
 import {BinaryOperator} from './BinaryOperator'
 
+/**
+ * Logical OR condition where at least one child block must be true.
+ */
 export default class OrBlock extends BinaryOperator {
+    /**
+     * @param blocks - Array of blocks where at least one must be true
+     */
     constructor(blocks: IBlock[] = []) {
         super(blocks, BlockType.ConditionOr)
     }
 
+    /**
+     * Returns string representation of the OR operation.
+     * @returns String like "(block1 OR block2)"
+     */
     toString(): string {
         if (this.blocks.length === 0) {
             return 'OR()'
@@ -17,6 +27,10 @@ export default class OrBlock extends BinaryOperator {
         return `(${blocksStr})`
     }
 
+    /**
+     * Creates a deep copy with cloned child blocks.
+     * @returns New OrBlock instance
+     */
     clone(): OrBlock {
         return new OrBlock(this.blocks.map(b => b.clone()),
         )

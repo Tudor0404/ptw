@@ -3,6 +3,9 @@ import {BlockGroup, MergeState,} from '../../types'
 import {IndexOutOfBoundsError} from '../../errors'
 import {generateHash} from '../../utils/hash'
 
+/**
+ * Base class for operators that take multiple child blocks (AND, OR).
+ */
 export abstract class BinaryOperator implements IBinaryOperator {
     public blockGroup: BlockGroup = BlockGroup.Condition
     public blockType: BlockType
@@ -10,11 +13,21 @@ export abstract class BinaryOperator implements IBinaryOperator {
     protected merge: MergeState = MergeState.DEFAULT
     private _cachedHash: string | null = null
 
+    /**
+     * @param blocks - Array of child blocks
+     * @param blockType - Type identifier for this operator
+     */
     constructor(blocks: IBlock[] = [], blockType: BlockType) {
         this.blocks = blocks
         this.blockType = blockType
     }
 
+    /**
+     * Adds a child block to this operator.
+     * @param block - Block to add
+     * @param index - Optional insertion position
+     * @throws {IndexOutOfBoundsError} Invalid index
+     */
     addBlock(block: IBlock, index?: number): void {
         if (index !== undefined) {
             if (index >= 0 && index <= this.blocks.length) {

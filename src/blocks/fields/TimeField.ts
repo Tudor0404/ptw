@@ -1,15 +1,28 @@
 import type {DateTimeRange, ISchedule, Result} from '../../types'
 import {BlockType, MergeState} from '../../types'
-import {IndexOutOfBoundsError, NotImplementedError, ValidationError} from '../../errors'
+import {IndexOutOfBoundsError, ValidationError} from '../../errors'
 import {success} from '../../utils/result'
 import {createMilitaryTimeString} from '../../utils/value'
 import Field from './Field'
 
+/**
+ * Represents time-of-day constraints. Times are milliseconds from midnight (0-86399999).
+ */
 export default class TimeField extends Field<DateTimeRange> {
+    /**
+     * @param values - Array of time ranges (milliseconds from midnight)
+     */
     constructor(values: DateTimeRange[] = []) {
         super(values, 0, 86399999, 0, BlockType.FieldTime)
     }
 
+    /**
+     * Adds a time range to this field.
+     * @param value - Time range (milliseconds from midnight)
+     * @param index - Optional insertion position
+     * @throws {ValidationError} Invalid time range
+     * @throws {IndexOutOfBoundsError} Invalid index
+     */
     override addValue(value: DateTimeRange, index?: number): void {
         if (!this.validateValue(value)) {
             throw new ValidationError(
@@ -36,6 +49,11 @@ export default class TimeField extends Field<DateTimeRange> {
         this.values.push(value)
     }
 
+    /**
+     * Removes a time range at the specified index.
+     * @param index - Zero-based index
+     * @throws {IndexOutOfBoundsError} Invalid index
+     */
     override removeValue(index: number): void {
         if (index >= 0 && index < this.values.length) {
             this.values.splice(index, 1)
@@ -48,6 +66,10 @@ export default class TimeField extends Field<DateTimeRange> {
         )
     }
 
+    /**
+     * Returns string representation in military time format.
+     * @returns String like "T[09:00:00..17:00:00]"
+     */
     toString(): string {
         if (this.values.length === 0) {
             return 'T[]'
@@ -61,6 +83,10 @@ export default class TimeField extends Field<DateTimeRange> {
         return `T[${rangesStr}]`
     }
 
+    /**
+     * Creates a deep copy of this TimeField.
+     * @returns New TimeField with same time ranges
+     */
     clone(): TimeField {
         return new TimeField([...this.values])
     }
@@ -153,9 +179,6 @@ export default class TimeField extends Field<DateTimeRange> {
         return success(false)
     }
 
-    optimise(): void {
-        throw new NotImplementedError('optimise', 'TimeField')
-    }
 
     protected validateValue(value: DateTimeRange): boolean {
         return (

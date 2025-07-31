@@ -2,19 +2,33 @@ import type {Result} from './utils/result'
 
 export type {Result}
 
+/**
+ * Date range using Date objects.
+ */
 export interface DateObjectRange {
     dateStart: Date
     dateEnd: Date
 }
 
+/**
+ * Time range as Unix timestamps in milliseconds.
+ */
 export interface DateTimeRange {
-    start: number // Milliseconds from midnight
-    end: number // Milliseconds from midnight, inclusive end
+    /** Start time as Unix timestamp in milliseconds */
+    start: number
+    /** End time as Unix timestamp in milliseconds (inclusive) */
+    end: number
 }
 
+/**
+ * Controls merging of adjacent/overlapping time ranges.
+ */
 export enum MergeState {
+    /** Use the default merge behavior for the context */
     DEFAULT,
+    /** Force merging of adjacent/overlapping ranges */
     EXPLICIT_ON,
+    /** Prevent merging, keep ranges separate */
     EXPLICIT_OFF,
 }
 
@@ -34,12 +48,18 @@ export enum BlockType {
 
 export enum BlockGroup { Field, Condition, Reference } // keep it in this order (least computationally expensive on the left)
 
+/**
+ * Flexible time input: [hour] to [hour, minute, second, millisecond].
+ */
 export type UserTimeInput =
     | [hour: number]
     | [hour: number, minute: number]
     | [hour: number, minute: number, second: number]
     | [hour: number, minute: number, second: number, millisecond: number]
 
+/**
+ * Flexible date-time input: [year] to [year, month, day, hour, minute, second, millisecond].
+ */
 export type UserDateTimeInput =
     | [year: number]
     | [year: number, month: number]
@@ -120,8 +140,6 @@ export interface IUnaryOperator extends IBlock {
 }
 
 export interface IField<V> extends IBlock {
-    optimise: () => void
-
     addValue: (value: V, index?: number) => void
 
     addValues: (values: readonly V[]) => void
@@ -138,15 +156,20 @@ export interface ISchedule {
 
     getExpression: (id: ReferenceId) => IBlock | undefined
 
-    setExpression: (id: ReferenceId, name: string | null, block: IBlock, overwrite?: boolean) => void
+    setExpression: (id: ReferenceId, name: string | null, block: IBlock, overwrite?: boolean) => Result<boolean, Error>
 
     removeExpression: (id: ReferenceId) => boolean
 
     getAllExpressions: () => Map<ReferenceId, { block: IBlock, name: string | null }>
 
-    evaluateExpression: (
+    evaluate: (
         id: ReferenceId,
         domainStart: number | Date,
         domainEnd: number | Date,
-    ) => DateTimeRange[]
+    ) => Result<DateTimeRange[], Error>
+
+    evaluateTimestamp: (
+        id: ReferenceId,
+        timestamp: number | Date,
+    ) => Result<boolean, Error>
 }

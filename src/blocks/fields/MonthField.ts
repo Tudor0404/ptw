@@ -5,11 +5,21 @@ import {success} from '../../utils/result'
 import {iterativeParsedValueCheck} from '../../utils/value'
 import Field from './Field'
 
+/**
+ * Month constraints. Values: 1=January, 12=December.
+ */
 export default class MonthField extends Field<ParsedNumericValue> {
+    /**
+     * @param values - Array of month constraints (1=January, 12=December)
+     */
     constructor(values: ParsedNumericValue[] = []) {
         super(values, 1, 12, 2, BlockType.FieldMonth)
     }
 
+    /**
+     * Returns string representation of month field.
+     * @returns String like "M[6..8]" or "M[1,12]"
+     */
     toString(): string {
         if (this.values.length === 0) {
             return 'M[]'
@@ -17,6 +27,10 @@ export default class MonthField extends Field<ParsedNumericValue> {
         return `M[${parsedNumericValuesToString(this.values)}]`
     }
 
+    /**
+     * Creates a deep copy with same month constraints.
+     * @returns New MonthField instance
+     */
     clone(): MonthField {
         return new MonthField([...this.values])
     }
@@ -38,7 +52,7 @@ export default class MonthField extends Field<ParsedNumericValue> {
             return success([{start: startUnix, end: endUnix}])
         }
 
-        const activeMonths = this.getActiveParsedNumberic(this.values)
+        const activeMonths = this.getActiveParsedNumeric(this.values)
         const result: DateTimeRange[] = []
 
         const startDate = new Date(startUnix)
@@ -109,9 +123,6 @@ export default class MonthField extends Field<ParsedNumericValue> {
         return success(iterativeParsedValueCheck(this.values, month, 1, 12))
     }
 
-    optimise(): void {
-        throw new Error('Not implemented')
-    }
 
     protected cacheValues(): void {
         this.cache = this.cacheParsedNumeric(this.values)

@@ -5,6 +5,9 @@ import {updateAlgebraicBitmap, updateBitmap} from '../../utils/cache'
 import {generateHash} from '../../utils/hash'
 import {checkAlgebraic, iterativeParsedValueCheck} from '../../utils/value'
 
+/**
+ * Base class for all field types that match against specific values or ranges.
+ */
 export default abstract class Field<V> implements IField<V> {
     public blockGroup: BlockGroup = BlockGroup.Field
     public blockType: BlockType
@@ -16,6 +19,13 @@ export default abstract class Field<V> implements IField<V> {
     protected maxValue: number
     private _cachedHash: string | null = null
 
+    /**
+     * @param values - Array of values for this field
+     * @param minValue - Minimum allowed value
+     * @param maxValue - Maximum allowed value
+     * @param cache_size - Cache size for optimization
+     * @param blockType - Type identifier for this block
+     */
     constructor(
         values: V[] = [],
         minValue: number = 0,
@@ -156,7 +166,6 @@ export default abstract class Field<V> implements IField<V> {
         )
     }
 
-    abstract optimise(): void
 
     addValues(values: readonly V[]): void {
         for (const value of values) {
@@ -223,7 +232,7 @@ export default abstract class Field<V> implements IField<V> {
         return bitmap
     }
 
-    protected getActiveParsedNumberic(values: ParsedNumericValue[]): boolean[] {
+    protected getActiveParsedNumeric(values: ParsedNumericValue[]): boolean[] {
         const activeDays: boolean[] = new Array(this.maxValue).fill(false)
 
         if (this.cache) {

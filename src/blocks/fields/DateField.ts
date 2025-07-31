@@ -4,7 +4,13 @@ import {findFirstIntersectingIndex, findLastIntersectingIndex} from '../../utils
 import {success} from '../../utils/result'
 import Field from './Field'
 
+/**
+ * Specific date ranges as Unix timestamps.
+ */
 export default class DateField extends Field<DateTimeRange> {
+    /**
+     * @param values - Array of date ranges as Unix timestamps
+     */
     constructor(values: DateTimeRange[] = []) {
         super(values, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0, BlockType.FieldDate)
     }
@@ -33,6 +39,10 @@ export default class DateField extends Field<DateTimeRange> {
         throw new RangeError('index is out of bounds')
     }
 
+    /**
+     * Returns string representation of date field.
+     * @returns String like "D[1640610000000..1640638800000]"
+     */
     toString(): string {
         if (this.values.length === 0) {
             return 'D[]'
@@ -41,6 +51,10 @@ export default class DateField extends Field<DateTimeRange> {
         return `D[${rangesStr}]`
     }
 
+    /**
+     * Creates a deep copy with same date ranges.
+     * @returns New DateField instance
+     */
     override clone(): DateField {
         return new DateField([...this.values])
     }
@@ -113,9 +127,6 @@ export default class DateField extends Field<DateTimeRange> {
         return success(false)
     }
 
-    override optimise(): void {
-        throw new Error('Not implemented')
-    }
 
     protected validateValue(value: DateTimeRange): boolean {
         if (!Number.isInteger(value.start) || !Number.isInteger(value.end) || value.start > value.end) {

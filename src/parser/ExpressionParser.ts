@@ -20,6 +20,7 @@ import TimeField from '../blocks/fields/TimeField'
 import WeekDayField from '../blocks/fields/WeekDayField'
 import YearField from '../blocks/fields/YearField'
 import {fail, success} from '../utils/result'
+import {ParseError} from "../errors";
 
 interface ScheduleReference {
     type: 'ScheduleReference'
@@ -31,6 +32,9 @@ interface ParenthesizedBlock {
     block: IBlock
 }
 
+/**
+ * Converts string expressions into executable block objects.
+ */
 class ExpressionParser {
     private semantics: ReturnType<typeof grammar.createSemantics>
     private parserState = {
@@ -43,7 +47,9 @@ class ExpressionParser {
     }
 
     /**
-     * Parse a schedule expression string into a block object
+     * Parses a schedule expression string into a block object.
+     * @param expression - Expression string (e.g., "T[09:00..17:00] AND WD[1..5]")
+     * @returns Result<IBlock, Error>
      */
     parse(expression: string): Result<IBlock, Error> {
         try {
@@ -68,7 +74,7 @@ class ExpressionParser {
                 return fail(new Error(`Failed to parse expression: ${expression}`))
             }
         } catch (error) {
-            return fail(new Error(
+            return fail(new ParseError(
                 `Error parsing expression: ${error instanceof Error ? error.message : String(error)}`,
             ))
         }
@@ -377,29 +383,57 @@ class ExpressionParser {
                 return time.eval()
             },
 
-            HourTime(h1, h2) {
+            HourTime(h1, h2, padding) {
                 const hours = Number.parseInt(h1.sourceString + h2.sourceString, 10)
-                return hours * 3600000
+                const hasPadding = padding && padding.sourceString === '>'
+                
+                if (hasPadding) {
+                    // Pad to maximum: 09> -> 09:59:59.999
+                    return hours * 3600000 + 59 * 60000 + 59 * 1000 + 999
+                } else {
+                    // No padding: 09 -> 09:00:00.000
+                    return hours * 3600000
+                }
             },
 
-            MinuteTime(h1, h2, colon, m1, m2) {
+            MinuteTime(h1, h2, colon, m1, m2, padding) {
                 const hours = Number.parseInt(h1.sourceString + h2.sourceString, 10)
                 const minutes = Number.parseInt(m1.sourceString + m2.sourceString, 10)
-                return hours * 3600000 + minutes * 60000
+                const hasPadding = padding && padding.sourceString === '>'
+                
+                if (hasPadding) {
+                    // Pad to maximum: 09:30> -> 09:30:59.999
+                    return hours * 3600000 + minutes * 60000 + 59 * 1000 + 999
+                } else {
+                    // No padding: 09:30 -> 09:30:00.000
+                    return hours * 3600000 + minutes * 60000
+                }
             },
 
-            SecondTime(h1, h2, colon1, m1, m2, colon2, s1, s2) {
+            SecondTime(h1, h2, colon1, m1, m2, colon2, s1, s2, padding) {
                 const hours = Number.parseInt(h1.sourceString + h2.sourceString, 10)
                 const minutes = Number.parseInt(m1.sourceString + m2.sourceString, 10)
                 const seconds = Number.parseInt(s1.sourceString + s2.sourceString, 10)
-                return hours * 3600000 + minutes * 60000 + seconds * 1000
+                const hasPadding = padding && padding.sourceString === '>'
+                
+                if (hasPadding) {
+                    // Pad to maximum: 09:30:45> -> 09:30:45.999
+                    return hours * 3600000 + minutes * 60000 + seconds * 1000 + 999
+                } else {
+                    // No padding: 09:30:45 -> 09:30:45.000
+                    return hours * 3600000 + minutes * 60000 + seconds * 1000
+                }
             },
 
-            MillisecondTime(h1, h2, colon1, m1, m2, colon2, s1, s2, dot, ms1, ms2, ms3) {
+            MillisecondTime(h1, h2, colon1, m1, m2, colon2, s1, s2, dot, ms1, ms2, ms3, padding) {
                 const hours = Number.parseInt(h1.sourceString + h2.sourceString, 10)
                 const minutes = Number.parseInt(m1.sourceString + m2.sourceString, 10)
                 const seconds = Number.parseInt(s1.sourceString + s2.sourceString, 10)
                 const milliseconds = Number.parseInt(ms1.sourceString + ms2.sourceString + ms3.sourceString, 10)
+                const hasPadding = padding && padding.sourceString === '>'
+                
+                // Note: MillisecondTime already has full precision, so padding doesn't change anything
+                // But we keep it for consistency and future extensibility
                 return hours * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds
             },
 
@@ -575,6 +609,11 @@ class ExpressionParser {
 
 export const expressionParser = new ExpressionParser()
 
+/**
+ * Parses a schedule expression string into a block object.
+ * @param expression - Expression string to parse
+ * @returns Result<IBlock, Error>
+ */
 export function parseExpression(expression: string): Result<IBlock, Error> {
     return expressionParser.parse(expression)
 }

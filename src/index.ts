@@ -1,4 +1,3 @@
-// Condition types
 export {default as AndBlock} from './blocks/conditions/AndBlock'
 export {default as NotBlock} from './blocks/conditions/NotBlock'
 
@@ -8,19 +7,14 @@ export {default as DateTimeField} from './blocks/fields/DateTimeFields'
 export {default as MonthDayField} from './blocks/fields/MonthDayField'
 export {default as MonthField} from './blocks/fields/MonthField'
 export {default as Reference} from './blocks/fields/Reference'
-// Field types
 export {default as TimeField} from './blocks/fields/TimeField'
 export {default as WeekDayField} from './blocks/fields/WeekDayField'
-
 export {default as YearField} from './blocks/fields/YearField'
-// Errors
 export * from './errors'
-// Core parsing and scheduling
 export {default as ExpressionParser, parseExpression} from './parser/ExpressionParser'
 
 export {default as Schedule} from './schedule/Schedule'
 
-// Types
 export type {
     AlgebraicValue,
     DateObjectRange,

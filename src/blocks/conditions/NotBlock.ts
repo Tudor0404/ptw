@@ -4,11 +4,21 @@ import {success} from '../../utils/result'
 import {sweepLineComplement} from '../../utils/sweepLine'
 import UnaryOperator from './UnaryOperator'
 
+/**
+ * Logical NOT condition that inverts the result of its child block.
+ */
 export default class NotBlock extends UnaryOperator {
+    /**
+     * @param block - The block to negate (optional)
+     */
     constructor(block?: IBlock) {
         super(block, BlockType.ConditionNot)
     }
 
+    /**
+     * Returns string representation of the NOT operation.
+     * @returns String like "NOT(block)"
+     */
     toString(): string {
         if (!this.block) {
             return 'NOT()'
@@ -16,6 +26,10 @@ export default class NotBlock extends UnaryOperator {
         return `NOT(${this.block.toString()})`
     }
 
+    /**
+     * Creates a deep copy with cloned child block.
+     * @returns New NotBlock instance
+     */
     clone(): NotBlock {
         return new NotBlock(this.block?.clone())
     }

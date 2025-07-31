@@ -2,6 +2,9 @@ import type {BlockType, DateTimeRange, IBlock, ISchedule, IUnaryOperator, Result
 import {BlockGroup, MergeState} from '../../types'
 import {generateHash} from '../../utils/hash'
 
+/**
+ * Base class for operators that take a single child block (NOT).
+ */
 export default abstract class UnaryOperator implements IUnaryOperator {
     public blockGroup: BlockGroup = BlockGroup.Condition
     public blockType: BlockType
@@ -9,6 +12,10 @@ export default abstract class UnaryOperator implements IUnaryOperator {
     protected merge: MergeState = MergeState.DEFAULT
     private _cachedHash: string | null = null
 
+    /**
+     * @param block - Child block (optional)
+     * @param blockType - Type identifier for this operator
+     */
     constructor(block: IBlock | null = null, blockType: BlockType) {
         this.blockType = blockType
         this.block = block
@@ -23,15 +30,26 @@ export default abstract class UnaryOperator implements IUnaryOperator {
         return this.merge
     }
 
+    /**
+     * Removes the child block.
+     */
     clearBlock(): void {
         this.block = null
         this._invalidateHash()
     }
 
+    /**
+     * Gets the current child block.
+     * @returns Child block or null
+     */
     getBlock(): IBlock | null {
         return this.block
     }
 
+    /**
+     * Sets the child block for this operator.
+     * @param block - Block to set as child
+     */
     setBlock(block: IBlock): void {
         this.block = block
         this._invalidateHash()

@@ -8,19 +8,19 @@ import {MergeState} from '../../src/types'
 
 describe('reference basic operations', () => {
     it('should create a Reference with an id', () => {
-        const ref = new Reference('test-id')
+        const ref = new Reference('testid')
         expect(ref).toBeInstanceOf(Reference)
-        expect(ref.getId()).toBe('test-id')
+        expect(ref.getId()).toBe('testid')
     })
 
     it('should set and get id', () => {
-        const ref = new Reference('initial-id')
-        ref.setId('new-id')
-        expect(ref.getId()).toBe('new-id')
+        const ref = new Reference('initialid')
+        ref.setId('newid')
+        expect(ref.getId()).toBe('newid')
     })
 
     it('should set and get merge state', () => {
-        const ref = new Reference('test-id')
+        const ref = new Reference('testid')
         expect(ref.getMerge()).toBe(MergeState.DEFAULT)
 
         ref.setMerge(MergeState.EXPLICIT_ON)
@@ -31,24 +31,24 @@ describe('reference basic operations', () => {
     })
 
     it('should clone correctly', () => {
-        const ref = new Reference('test-id')
+        const ref = new Reference('testid')
         ref.setMerge(MergeState.EXPLICIT_ON)
 
         const cloned = ref.clone()
         expect(cloned).toBeInstanceOf(Reference)
         expect(cloned).not.toBe(ref)
-        expect(cloned.getId()).toBe('test-id')
+        expect(cloned.getId()).toBe('testid')
         expect(cloned.getMerge()).toBe(MergeState.DEFAULT) // Clone doesn't copy merge state
     })
 
     it('should generate correct toString', () => {
-        const ref = new Reference('my-schedule')
-        expect(ref.toString()).toBe('REF[my-schedule]')
+        const ref = new Reference('myschedule')
+        expect(ref.toString()).toBe('REF[myschedule]')
     })
 
     it('should generate consistent hash', () => {
-        const ref1 = new Reference('test-id')
-        const ref2 = new Reference('test-id')
+        const ref1 = new Reference('testid')
+        const ref2 = new Reference('testid')
 
         expect(ref1.getHash()).toBe(ref2.getHash())
 
@@ -58,7 +58,7 @@ describe('reference basic operations', () => {
         ref2.setMerge(MergeState.EXPLICIT_ON)
         expect(ref1.getHash()).toBe(ref2.getHash())
 
-        const ref3 = new Reference('different-id')
+        const ref3 = new Reference('differentid')
         expect(ref1.getHash()).not.toBe(ref3.getHash())
     })
 })
@@ -81,12 +81,12 @@ describe('reference evaluation', () => {
         ])
 
         // Add expressions to schedule
-        schedule.setExpression('working-hours', 'Working Hours', timeField)
+        schedule.setExpression('workinghours', 'Working Hours', timeField)
         schedule.setExpression('weekdays', 'Work Days', weekdayField)
     })
 
     it('should return error when no schedule is provided', () => {
-        const ref = new Reference('working-hours')
+        const ref = new Reference('workinghours')
 
         const result = ref.evaluate(0, 1000)
         expect(result.ok).toBe(false)
@@ -96,7 +96,7 @@ describe('reference evaluation', () => {
     })
 
     it('should return error when referenced expression does not exist', () => {
-        const ref = new Reference('non-existent')
+        const ref = new Reference('nonexistent')
 
         const result = ref.evaluate(0, 1000, schedule)
         expect(result.ok).toBe(false)
@@ -106,7 +106,7 @@ describe('reference evaluation', () => {
     })
 
     it('should evaluate referenced expression successfully', () => {
-        const ref = new Reference('working-hours')
+        const ref = new Reference('workinghours')
         const result = ref.evaluate(0, 86400000, schedule) // Full day domain
 
         expect(result.ok).toBe(true)
@@ -133,11 +133,11 @@ describe('reference merge behavior', () => {
             {start: 39600000, end: 43200000}, // 11AM to 12PM
         ])
 
-        schedule.setExpression('consecutive-hours', 'Consecutive Hours', timeField)
+        schedule.setExpression('consecutivehours', 'Consecutive Hours', timeField)
     })
 
     it('should use explicit merge state when set to EXPLICIT_ON', () => {
-        const ref = new Reference('consecutive-hours')
+        const ref = new Reference('consecutivehours')
         ref.setMerge(MergeState.EXPLICIT_ON)
 
         // Call with merge=false, but ref should override with true
@@ -153,7 +153,7 @@ describe('reference merge behavior', () => {
     })
 
     it('should use explicit merge state when set to EXPLICIT_OFF', () => {
-        const ref = new Reference('consecutive-hours')
+        const ref = new Reference('consecutivehours')
         ref.setMerge(MergeState.EXPLICIT_OFF)
 
         // Call with merge=true, but ref should override with false
@@ -173,7 +173,7 @@ describe('reference merge behavior', () => {
     })
 
     it('should pass through merge parameter when merge state is DEFAULT', () => {
-        const ref = new Reference('consecutive-hours')
+        const ref = new Reference('consecutivehours')
         expect(ref.getMerge()).toBe(MergeState.DEFAULT)
 
         // Test with merge=true
@@ -192,7 +192,7 @@ describe('reference merge behavior', () => {
     })
 
     it('should default to merge=true when no merge parameter provided and state is DEFAULT', () => {
-        const ref = new Reference('consecutive-hours')
+        const ref = new Reference('consecutivehours')
 
         // No merge parameter provided, should default to true
         const result = ref.evaluate(0, 86400000, schedule)
@@ -227,11 +227,11 @@ describe('reference with complex expressions', () => {
         ])
         mergeOnField.setMerge(MergeState.EXPLICIT_ON)
 
-        schedule.setExpression('no-merge', 'No Merge Field', mergeOffField)
-        schedule.setExpression('force-merge', 'Force Merge Field', mergeOnField)
+        schedule.setExpression('nomerge', 'No Merge Field', mergeOffField)
+        schedule.setExpression('forcemerge', 'Force Merge Field', mergeOnField)
 
-        const refNoMerge = new Reference('no-merge')
-        const refForceMerge = new Reference('force-merge')
+        const refNoMerge = new Reference('nomerge')
+        const refForceMerge = new Reference('forcemerge')
 
         // The referenced field's own merge state should take precedence
         const resultNoMerge = refNoMerge.evaluate(0, 86400000, schedule, true)
@@ -252,13 +252,13 @@ describe('reference with complex expressions', () => {
             {start: 32400000, end: 39600000}, // 9AM to 11AM
         ])
 
-        const innerRef = new Reference('base-time')
+        const innerRef = new Reference('basetime')
         innerRef.setMerge(MergeState.EXPLICIT_ON)
 
-        schedule.setExpression('base-time', 'Base Time', baseField)
-        schedule.setExpression('ref-to-base', 'Reference to Base', innerRef)
+        schedule.setExpression('basetime', 'Base Time', baseField)
+        schedule.setExpression('reftobase', 'Reference to Base', innerRef)
 
-        const outerRef = new Reference('ref-to-base')
+        const outerRef = new Reference('reftobase')
         const result = outerRef.evaluate(0, 86400000, schedule)
 
         expect(result.ok).toBe(true)

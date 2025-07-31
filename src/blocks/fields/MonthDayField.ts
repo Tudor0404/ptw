@@ -5,11 +5,21 @@ import {success} from '../../utils/result'
 import {iterativeParsedValueCheck} from '../../utils/value'
 import Field from './Field'
 
+/**
+ * Month day constraints. Values: 1-31 (day of month).
+ */
 export default class MonthDayField extends Field<ParsedNumericValue> {
+    /**
+     * @param values - Array of day-of-month constraints (1-31)
+     */
     constructor(values: ParsedNumericValue[] = []) {
         super(values, 1, 31, 4, BlockType.FieldMonthDay)
     }
 
+    /**
+     * Returns string representation of month day field.
+     * @returns String like "MD[1..15]" or "MD[1,15,31]"
+     */
     toString(): string {
         if (this.values.length === 0) {
             return 'MD[]'
@@ -17,6 +27,10 @@ export default class MonthDayField extends Field<ParsedNumericValue> {
         return `MD[${parsedNumericValuesToString(this.values)}]`
     }
 
+    /**
+     * Creates a deep copy with same day constraints.
+     * @returns New MonthDayField instance
+     */
     override clone(): MonthDayField {
         return new MonthDayField([...this.values])
     }
@@ -44,7 +58,7 @@ export default class MonthDayField extends Field<ParsedNumericValue> {
             return success([{start: startUnix, end: endUnix}])
         }
 
-        const activeDays = this.getActiveParsedNumberic(this.values)
+        const activeDays = this.getActiveParsedNumeric(this.values)
 
         const result: DateTimeRange[] = []
 
@@ -105,9 +119,6 @@ export default class MonthDayField extends Field<ParsedNumericValue> {
         return success(iterativeParsedValueCheck(this.values, dayOfMonth, this.minValue, this.maxValue))
     }
 
-    override optimise(): void {
-        throw new Error('Not implemented')
-    }
 
     protected cacheValues(): void {
         this.cache = this.cacheParsedNumeric(this.values)

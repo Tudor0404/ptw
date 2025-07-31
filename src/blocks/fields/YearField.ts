@@ -5,7 +5,13 @@ import {success} from '../../utils/result'
 import {iterativeParsedValueCheck} from '../../utils/value'
 import Field from './Field'
 
+/**
+ * Year constraints. Values: any integer year (-9999 to 9999).
+ */
 export default class YearField extends Field<ParsedNumericValue> {
+    /**
+     * @param values - Array of year constraints
+     */
     constructor(values: ParsedNumericValue[] = []) {
         super(values, -9999, 9999, 0, BlockType.FieldYear)
     }
@@ -34,6 +40,10 @@ export default class YearField extends Field<ParsedNumericValue> {
         throw new RangeError('index is out of bounds')
     }
 
+    /**
+     * Returns string representation of year field.
+     * @returns String like "Y[2023..2025]" or "Y[2023,2024]"
+     */
     toString(): string {
         if (this.values.length === 0) {
             return 'Y[]'
@@ -41,6 +51,10 @@ export default class YearField extends Field<ParsedNumericValue> {
         return `Y[${parsedNumericValuesToString(this.values)}]`
     }
 
+    /**
+     * Creates a deep copy with same year constraints.
+     * @returns New YearField instance
+     */
     clone(): YearField {
         return new YearField([...this.values])
     }
@@ -115,9 +129,6 @@ export default class YearField extends Field<ParsedNumericValue> {
         return success(result)
     }
 
-    optimise(): void {
-        throw new Error('Not implemented')
-    }
 
     protected validateValue(value: ParsedNumericValue): boolean {
         return this.validateParsedNumeric(value)

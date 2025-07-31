@@ -51,16 +51,14 @@ export class IndexOutOfBoundsError extends ScheduleError {
 /**
  * Error thrown during schedule evaluation when a block fails to evaluate
  */
-export class EvaluationError extends ScheduleError {
-    readonly code = 'EVALUATION_ERROR'
+export class InvalidIDError extends ScheduleError {
+    readonly code = 'INVALID_ID_ERROR'
 
     constructor(
         message: string,
-        public readonly blockType: string,
-        public readonly blockId?: string,
         context?: Record<string, unknown>,
     ) {
-        super(message, {...context, blockType, blockId})
+        super(message, {...context})
     }
 }
 
@@ -93,21 +91,3 @@ export class ParseError extends ScheduleError {
     }
 }
 
-/**
- * Error thrown when a method is not yet implemented
- */
-export class NotImplementedError extends ScheduleError {
-    readonly code = 'NOT_IMPLEMENTED'
-
-    constructor(
-        public readonly methodName: string,
-        public readonly className: string,
-        context?: Record<string, unknown>,
-    ) {
-        super(`Method ${methodName} is not yet implemented in ${className}`, {
-            ...context,
-            methodName,
-            className,
-        })
-    }
-}

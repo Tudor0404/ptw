@@ -19,10 +19,10 @@ describe('schedule basic operations', () => {
             {start: 32400000, end: 61200000}, // 9AM to 5PM
         ])
 
-        schedule.setExpression('working-hours', 'Working Hours', timeField)
+        schedule.setExpression('workinghours', 'Working Hours', timeField)
 
         expect(schedule.expressions.size).toBe(1)
-        expect(schedule.getExpression('working-hours')).toBe(timeField)
+        expect(schedule.getExpression('workinghours')).toBe(timeField)
     })
 
     it('should retrieve expression correctly', () => {
@@ -49,13 +49,13 @@ describe('schedule basic operations', () => {
             {start: 0, end: 86399999}, // Full day (minus 1ms to stay within bounds)
         ])
 
-        schedule.setExpression('full-day', 'Full Day', timeField)
+        schedule.setExpression('fullday', 'Full Day', timeField)
         expect(schedule.expressions.size).toBe(1)
 
-        const removed = schedule.removeExpression('full-day')
+        const removed = schedule.removeExpression('fullday')
         expect(removed).toBe(true)
         expect(schedule.expressions.size).toBe(0)
-        expect(schedule.getExpression('full-day')).toBeUndefined()
+        expect(schedule.getExpression('fullday')).toBeUndefined()
     })
 
     it('should return false when removing non-existent expression', () => {
@@ -69,13 +69,13 @@ describe('schedule basic operations', () => {
         const timeField = new TimeField([{start: 0, end: 43200000}]) // Half day
         const weekdayField = new WeekDayField([{type: 'Number', value: 5}]) // Friday
 
-        schedule.setExpression('half-day', 'Half Day', timeField)
+        schedule.setExpression('halfday', 'Half Day', timeField)
         schedule.setExpression('friday', 'Friday', weekdayField)
 
         const allExpressions = schedule.getAllExpressions()
         expect(allExpressions.size).toBe(2)
-        expect(allExpressions.get('half-day')?.block).toBe(timeField)
-        expect(allExpressions.get('half-day')?.name).toBe('Half Day')
+        expect(allExpressions.get('halfday')?.block).toBe(timeField)
+        expect(allExpressions.get('halfday')?.name).toBe('Half Day')
         expect(allExpressions.get('friday')?.block).toBe(weekdayField)
         expect(allExpressions.get('friday')?.name).toBe('Friday')
 
@@ -94,37 +94,37 @@ describe('schedule expression overwrite behavior', () => {
         originalField = new TimeField([{start: 0, end: 43200000}])
         newField = new WeekDayField([{type: 'Number', value: 1}])
 
-        schedule.setExpression('test-expr', 'Original', originalField)
+        schedule.setExpression('testexpr', 'Original', originalField)
     })
 
     it('should overwrite by default', () => {
-        schedule.setExpression('test-expr', 'New', newField)
+        schedule.setExpression('testexpr', 'New', newField)
 
-        expect(schedule.getExpression('test-expr')).toBe(newField)
-        expect(schedule.expressions.get('test-expr')?.name).toBe('New')
+        expect(schedule.getExpression('testexpr')).toBe(newField)
+        expect(schedule.expressions.get('testexpr')?.name).toBe('New')
     })
 
     it('should overwrite when explicitly set to true', () => {
-        schedule.setExpression('test-expr', 'New', newField, true)
+        schedule.setExpression('testexpr', 'New', newField, true)
 
-        expect(schedule.getExpression('test-expr')).toBe(newField)
-        expect(schedule.expressions.get('test-expr')?.name).toBe('New')
+        expect(schedule.getExpression('testexpr')).toBe(newField)
+        expect(schedule.expressions.get('testexpr')?.name).toBe('New')
     })
 
-    it('should throw error when overwrite is false and expression exists', () => {
-        expect(() => {
-            schedule.setExpression('test-expr', 'New', newField, false)
-        }).toThrow(ValidationError)
+    it('should return error when overwrite is false and expression exists', () => {
+        const result = schedule.setExpression('testexpr', 'New', newField, false)
+        expect(result.ok).toBe(false)
+        expect(result.error).toBeInstanceOf(ValidationError)
 
         // Original should still be there
-        expect(schedule.getExpression('test-expr')).toBe(originalField)
-        expect(schedule.expressions.get('test-expr')?.name).toBe('Original')
+        expect(schedule.getExpression('testexpr')).toBe(originalField)
+        expect(schedule.expressions.get('testexpr')?.name).toBe('Original')
     })
 
     it('should allow setting new expression when overwrite is false', () => {
-        schedule.setExpression('new-expr', 'New Expression', newField, false)
+        schedule.setExpression('newexpr', 'New Expression', newField, false)
 
-        expect(schedule.getExpression('new-expr')).toBe(newField)
+        expect(schedule.getExpression('newexpr')).toBe(newField)
         expect(schedule.expressions.size).toBe(2)
     })
 })
@@ -141,12 +141,15 @@ describe('schedule expression evaluation', () => {
             {start: 32400000, end: 61200000}, // 9AM to 5PM
         ])
 
-        schedule.setExpression('working-hours', 'Working Hours', timeField)
+        schedule.setExpression('workinghours', 'Working Hours', timeField)
 
-        const result = schedule.evaluateExpression('working-hours', 0, 86400000)
-        expect(result).toHaveLength(1)
-        expect(result[0].start).toBe(32400000)
-        expect(result[0].end).toBe(61200000)
+        const result = schedule.evaluate('workinghours', 0, 86400000)
+        expect(result.ok).toBe(true)
+        if (result.ok) {
+            expect(result.value).toHaveLength(1)
+            expect(result.value[0].start).toBe(32400000)
+            expect(result.value[0].end).toBe(61200000)
+        }
     })
 
     it('should handle Date objects for evaluation', () => {
@@ -154,26 +157,29 @@ describe('schedule expression evaluation', () => {
             {start: 43200000, end: 46800000}, // 12PM to 1PM
         ])
 
-        schedule.setExpression('lunch-time', 'Lunch Time', timeField)
+        schedule.setExpression('lunchtime', 'Lunch Time', timeField)
 
         const startDate = new Date(2023, 0, 1) // Jan 1, 2023
         const endDate = new Date(2023, 0, 2) // Jan 2, 2023
 
-        const result = schedule.evaluateExpression('lunch-time', startDate, endDate)
-        expect(result).toHaveLength(1)
+        const result = schedule.evaluate('lunchtime', startDate, endDate)
+        expect(result.ok).toBe(true)
+        if (result.ok) {
+            expect(result.value).toHaveLength(1)
 
-        // TimeField should return the time ranges constrained to the domain
-        // Since we're passing a full day domain, expect the time field's ranges
-        const expectedStart = startDate.getTime() + 43200000 // Start of domain + 12PM offset
-        const expectedEnd = startDate.getTime() + 46800000 // Start of domain + 1PM offset
+            // TimeField should return the time ranges constrained to the domain
+            // Since we're passing a full day domain, expect the time field's ranges
+            const expectedStart = startDate.getTime() + 43200000 // Start of domain + 12PM offset
+            const expectedEnd = startDate.getTime() + 46800000 // Start of domain + 1PM offset
 
-        expect(result[0].start).toBe(expectedStart)
-        expect(result[0].end).toBe(expectedEnd)
+            expect(result.value[0].start).toBe(expectedStart)
+            expect(result.value[0].end).toBe(expectedEnd)
+        }
     })
 
     it('should throw error when evaluating non-existent expression', () => {
         expect(() => {
-            schedule.evaluateExpression('non-existent', 0, 86400000)
+            schedule.evaluate('non-existent', 0, 86400000)
         }).toThrow(ValidationError)
     })
 
@@ -182,8 +188,11 @@ describe('schedule expression evaluation', () => {
 
         schedule.setExpression('empty', 'Empty Field', emptyField)
 
-        const result = schedule.evaluateExpression('empty', 0, 86400000)
-        expect(result).toEqual([])
+        const result = schedule.evaluate('empty', 0, 86400000)
+        expect(result.ok).toBe(true)
+        if (result.ok) {
+            expect(result.value).toEqual([])
+        }
     })
 
     it('should handle complex expressions with conditions', () => {
@@ -197,10 +206,13 @@ describe('schedule expression evaluation', () => {
 
         const workingHours = new AndBlock([timeField, weekdayField])
 
-        schedule.setExpression('business-hours', 'Business Hours', workingHours)
+        schedule.setExpression('businesshours', 'Business Hours', workingHours)
 
-        const result = schedule.evaluateExpression('business-hours', 0, 604800000) // One week
-        expect(result.length).toBeGreaterThan(0)
+        const result = schedule.evaluate('businesshours', 0, 604800000) // One week
+        expect(result.ok).toBe(true)
+        if (result.ok) {
+            expect(result.value.length).toBeGreaterThan(0)
+        }
     })
 })
 
@@ -219,17 +231,23 @@ describe('schedule merge state handling', () => {
 
         // Test with field having explicit merge off
         timeField.setMerge(MergeState.EXPLICIT_OFF)
-        schedule.setExpression('no-merge-time', 'No Merge Time', timeField)
+        schedule.setExpression('nomergetime', 'No Merge Time', timeField)
 
-        const result = schedule.evaluateExpression('no-merge-time', 0, 86400000)
-        expect(result).toHaveLength(2) // Should not merge
+        const result = schedule.evaluate('nomergetime', 0, 86400000)
+        expect(result.ok).toBe(true)
+        if (result.ok) {
+            expect(result.value).toHaveLength(2) // Should not merge
+        }
 
         // Test with field having explicit merge on
         timeField.setMerge(MergeState.EXPLICIT_ON)
-        schedule.setExpression('force-merge-time', 'Force Merge Time', timeField)
+        schedule.setExpression('forcemergetime', 'Force Merge Time', timeField)
 
-        const mergedResult = schedule.evaluateExpression('force-merge-time', 0, 86400000)
-        expect(mergedResult).toHaveLength(1) // Should merge
+        const mergedResult = schedule.evaluate('forcemergetime', 0, 86400000)
+        expect(mergedResult.ok).toBe(true)
+        if (mergedResult.ok) {
+            expect(mergedResult.value).toHaveLength(1) // Should merge
+        }
     })
 })
 

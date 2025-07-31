@@ -5,11 +5,21 @@ import {success} from '../../utils/result'
 import {iterativeParsedValueCheck} from '../../utils/value'
 import Field from './Field'
 
+/**
+ * Weekday constraints. Values: 1=Monday, 7=Sunday (ISO 8601).
+ */
 export default class WeekDayField extends Field<ParsedNumericValue> {
+    /**
+     * @param values - Array of weekday constraints (1=Monday, 7=Sunday)
+     */
     constructor(values: ParsedNumericValue[] = []) {
         super(values, 1, 7, 1, BlockType.FieldWeekDay)
     }
 
+    /**
+     * Returns string representation of weekday field.
+     * @returns String like "WD[1..5]" or "WD[6,7]"
+     */
     toString(): string {
         if (this.values.length === 0) {
             return 'WD[]'
@@ -17,6 +27,10 @@ export default class WeekDayField extends Field<ParsedNumericValue> {
         return `WD[${parsedNumericValuesToString(this.values)}]`
     }
 
+    /**
+     * Creates a deep copy with same weekday constraints.
+     * @returns New WeekDayField instance
+     */
     clone(): WeekDayField {
         return new WeekDayField([...this.values])
     }
@@ -38,7 +52,7 @@ export default class WeekDayField extends Field<ParsedNumericValue> {
             return success([{start: startUnix, end: endUnix}])
         }
 
-        const activeWeekdays = this.getActiveParsedNumberic(this.values)
+        const activeWeekdays = this.getActiveParsedNumeric(this.values)
 
         const result: DateTimeRange[] = []
 
@@ -97,9 +111,6 @@ export default class WeekDayField extends Field<ParsedNumericValue> {
         return success(iterativeParsedValueCheck(this.values, weekday, this.minValue, this.maxValue))
     }
 
-    optimise(): void {
-        throw new Error('Not implemented')
-    }
 
     protected cacheValues(): void {
         this.cache = this.cacheParsedNumeric(this.values)

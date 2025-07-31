@@ -1,12 +1,8 @@
 # Getting Started
 
-This guide will help you get up and running with PTW quickly.
-
 ## Installation
 
 Install PTW using your preferred package manager:
-
-::: code-group
 
 ```bash [npm]
 npm install ptw
@@ -20,42 +16,105 @@ pnpm install ptw
 yarn add ptw
 ```
 
-:::
+## Usage
 
-## Quick Start
+### Direct Expression Evaluation
 
-Here's a simple example to get you started:
+For simple expressions without references:
 
 ```typescript
-import { parseExpression, Schedule } from 'ptw'
+import {parseExpression} from 'ptw'
 
 // Parse a schedule expression for business hours
 const expression = parseExpression('T[9:00..17:00] AND WD[1..5]')
-
-// Create a schedule instance
-const schedule = new Schedule()
+if (!expression.ok) return
 
 // Define evaluation domain (UTC timestamps)
 const startTime = Date.UTC(2024, 0, 1) // January 1, 2024 UTC
 const endTime = Date.UTC(2024, 0, 31, 23, 59, 59, 999) // January 31, 2024 UTC
 
-if (expression.ok) {
-    const result = expression.value.evaluate(startTime, endTime, schedule)
-    
-    if (result.ok) {
-        console.log('Matching time ranges:', result.value)
-        // Output: Array of time ranges matching business hours in January 2024
-    } else {
-        console.error('Evaluation error:', result.error)
-    }
-} else {
-    console.error('Parse error:', expression.error)
-}
+// Evaluate directly - no Schedule instance needed
+const result = expression.value.evaluate(startTime, endTime)
+if (!result.ok) return
+
+console.log('Business hours in January 2024:', result.value)
+// Output: Array of time ranges matching business hours
+
+// You can also check if a specific timestamp matches
+const specificTime = Date.UTC(2024, 0, 15, 10, 30) // Jan 15, 2024 10:30 AM UTC
+const timestampResult = expression.value.evaluateTimestamp(specificTime)
+if (!timestampResult.ok) return
+
+console.log('Is 10:30 AM on Jan 15 a business hour?', timestampResult.value)
 ```
 
-## Important: UTC Timestamps
+### Schedule Class (For References and Caching)
 
-PTW is timezone-agnostic and works exclusively with UTC timestamps. Always use `Date.UTC()` or ensure your timestamps are in UTC:
+Use the Schedule class when you need:
+- **References between expressions**: Store and reuse expressions by name
+- **Caching**: Automatic optimization for repeated evaluations  
+- **Organization**: Manage multiple related expressions together
+
+**Note**: You can pass a Schedule to any block's `evaluate()` method, even if the block isn't stored in that schedule. This is useful for reference resolution.
+
+```typescript
+import {parseExpression, Schedule} from 'ptw'
+
+// Create a schedule instance for caching and references
+const schedule = new Schedule()
+
+// Define reusable expressions first
+const businessHoursExpr = parseExpression('T[9:00..17:00] AND WD[1..5]')
+const holidaysExpr = parseExpression('D[2024-01-01, 2024-07-04, 2024-12-25]')
+if (!businessHoursExpr.ok || !holidaysExpr.ok) return
+
+// Set expressions in schedule before using them
+const setResult1 = schedule.setExpression('businesshours', 'Business Hours', businessHoursExpr.value)
+const setResult2 = schedule.setExpression('holidays', 'Company Holidays', holidaysExpr.value)
+if (!setResult1.ok || !setResult2.ok) return
+
+// Now we can create expressions that reference the stored ones
+const workingDaysExpr = parseExpression('REF[businesshours] AND NOT REF[holidays]')
+if (!workingDaysExpr.ok) return
+
+const startTime = Date.UTC(2024, 0, 1)
+const endTime = Date.UTC(2024, 0, 31, 23, 59, 59, 999)
+
+// Evaluate with schedule context for references and caching
+const result = workingDaysExpr.value.evaluate(startTime, endTime, schedule)
+if (!result.ok) return
+
+console.log('Working days (excluding holidays):', result.value)
+
+// Check specific timestamps using Schedule context
+const newYearsDay = Date.UTC(2024, 0, 1, 10, 0) // Jan 1, 2024 10:00 AM UTC
+const timestampResult = workingDaysExpr.value.evaluateTimestamp(newYearsDay, schedule)
+if (!timestampResult.ok) return
+
+console.log('Is New Years Day at 10 AM a working hour?', timestampResult.value) // false (holiday)
+```
+
+### Using Schedule Context with Any Block
+
+You can pass a Schedule to any block's evaluation, even if the block isn't stored in that schedule:
+
+```typescript
+// Parse an expression that uses references
+const dynamicExpr = parseExpression('REF[businesshours] OR T[20:00..22:00]') // Business hours OR evening
+if (!dynamicExpr.ok) return
+
+// Evaluate using the schedule context (block not stored in schedule)
+const startTime = Date.UTC(2024, 0, 15, 21, 0) // Jan 15, 9 PM
+const result = dynamicExpr.value.evaluateTimestamp(startTime, schedule)
+if (!result.ok) return
+
+console.log('Is 9 PM a valid time?', result.value) // true (evening time)
+```
+
+
+## UTC Timestamps
+
+PTW works exclusively with UTC timestamps:
 
 ```typescript
 // ✅ Correct: Using Date.UTC()
@@ -69,29 +128,22 @@ const utcTimestamp = localDate.getTime() // Already in UTC milliseconds
 const localStart = new Date(2024, 0, 1, 9, 0, 0).getTime() // Local timezone
 ```
 
-## Basic Expression Syntax
-
-PTW uses a simple, intuitive syntax for schedule expressions:
-
-### Field Types
-
-- `T[...]` - Time fields (hours, minutes, seconds)
-- `WD[...]` - Weekday fields (1=Monday, 7=Sunday)
-- `D[...]` - Date fields (YYYY-MM-DD format)
-- `M[...]` - Month fields (1=January, 12=December)
-- `MD[...]` - Month day fields (1-31)
-- `Y[...]` - Year fields
-
-### Examples
+## Expression Syntax
 
 ```typescript
-// Time ranges
-parseExpression('T[9:00..17:00]') // 9 AM to 5 PM
+// Time ranges (24-hour format)
+parseExpression('T[9:00..17:00]') // 9:00:00.000 to 17:00:00.000 (exact times)
+parseExpression('T[9>..17>]') // 9:59:59.999 to 17:59:59.999 (with padding)
 
-// Weekdays
+// Time padding: Add > to pad incomplete times to maximum values
+parseExpression('T[9..17]')     // 9:00:00.000 to 17:00:00.000
+parseExpression('T[9>..17>]')   // 9:59:59.999 to 17:59:59.999
+parseExpression('T[9:30>..12>]') // 9:30:59.999 to 12:59:59.999
+
+// Weekdays (1=Monday, 7=Sunday)  
 parseExpression('WD[1..5]') // Monday through Friday
 
-// Specific dates
+// Dates (YYYY-MM-DD)
 parseExpression('D[2024-01-15]') // January 15, 2024
 
 // Combining with AND
@@ -99,45 +151,103 @@ parseExpression('T[9:00..17:00] AND WD[1..5]') // Business hours
 
 // Multiple values
 parseExpression('WD[1,3,5]') // Monday, Wednesday, Friday
+
+// References (Schedule class only)
+parseExpression('REF[businesshours] AND NOT REF[holidays]')
 ```
 
-## Working with Results
+## Evaluation Methods
 
-PTW returns time ranges as an array of objects with `start` and `end` properties (UTC milliseconds):
+### Range Evaluation (`evaluate`)
 
 ```typescript
 const expression = parseExpression('T[14:00..16:00] AND WD[1]') // 2-4 PM on Mondays
-const result = expression.value.evaluate(startTime, endTime, schedule)
+if (!expression.ok) return
 
-if (result.ok) {
-    result.value.forEach(range => {
-        const start = new Date(range.start)
-        const end = new Date(range.end)
-        console.log(`Range: ${start.toISOString()} to ${end.toISOString()}`)
-    })
-}
+const startTime = Date.UTC(2024, 0, 1)
+const endTime = Date.UTC(2024, 0, 31, 23, 59, 59, 999)
+
+const result = expression.value.evaluate(startTime, endTime)
+if (!result.ok) return
+
+result.value.forEach(range => {
+    const start = new Date(range.start)
+    const end = new Date(range.end)
+    console.log(`Range: ${start.toISOString()} to ${end.toISOString()}`)
+})
+```
+
+### Timestamp Evaluation (`evaluateTimestamp`)
+
+```typescript
+const expression = parseExpression('T[9:00..17:00] AND WD[1..5]') // Business hours
+if (!expression.ok) return
+
+// Check if right now is during business hours
+const now = Date.now()
+const result = expression.value.evaluateTimestamp(now)
+if (!result.ok) return
+
+console.log('Is it currently business hours?', result.value)
+
+// Check multiple specific times
+const times = [
+    Date.UTC(2024, 0, 15, 10, 30), // Monday 10:30 AM
+    Date.UTC(2024, 0, 13, 10, 30), // Saturday 10:30 AM
+    Date.UTC(2024, 0, 15, 20, 30), // Monday 8:30 PM
+]
+
+times.forEach(time => {
+    const result = expression.value.evaluateTimestamp(time)
+    if (result.ok) {
+        const date = new Date(time)
+        console.log(`${date.toISOString()}: ${result.value}`)
+    }
+})
 ```
 
 ## Error Handling
 
-PTW uses a `Result` type for safe error handling:
-
 ```typescript
+// Parse errors
 const expression = parseExpression('invalid syntax')
-
-if (expression.ok) {
-    // Success - use expression.value
-    const schedule = expression.value
-} else {
-    // Error - handle expression.error
+if (!expression.ok) {
     console.error('Parse failed:', expression.error.message)
+    return
 }
+
+// Success - use expression.value
+const block = expression.value
+
+// Schedule operations also return Results
+const schedule = new Schedule()
+const setResult = schedule.setExpression('test', 'Test', someBlock)
+if (!setResult.ok) {
+    console.error('Failed to set expression:', setResult.error.message)
+    return
+}
+
+console.log('Expression set successfully')
+
+// Evaluation errors
+const evalResult = block.evaluate(startTime, endTime)
+if (!evalResult.ok) {
+    console.error('Evaluation failed:', evalResult.error.message)
+    return
+}
+
+// Timestamp evaluation errors
+const timestampResult = block.evaluateTimestamp(Date.now())
+if (!timestampResult.ok) {
+    console.error('Timestamp evaluation failed:', timestampResult.error.message)
+    return
+}
+
+console.log('Timestamp matches:', timestampResult.value)
 ```
 
 ## Next Steps
 
-- Learn about [field types and syntax](/guide/field-types)
-- Explore [logical operations](/guide/logical-operations)
-- Understand [timezone handling](/guide/timezones)
-- Check out [common patterns](/guide/patterns)
-- Read the [complete API reference](/reference/api)
+- [Field types and syntax](/guide/field-types)
+- [Logical operations](/guide/logical-operations)
+- [Timezone handling](/guide/timezones)

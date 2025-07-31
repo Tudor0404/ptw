@@ -4,11 +4,21 @@ import {success} from '../../utils/result'
 import {sweepLineIntersection} from '../../utils/sweepLine'
 import {BinaryOperator} from './BinaryOperator'
 
+/**
+ * Logical AND condition requiring all child blocks to be true.
+ */
 export default class AndOperator extends BinaryOperator {
+    /**
+     * @param blocks - Array of blocks that must all be true
+     */
     constructor(blocks: IBlock[] = []) {
         super(blocks, BlockType.ConditionAnd)
     }
 
+    /**
+     * Returns string representation of the AND operation.
+     * @returns String like "(block1 AND block2)"
+     */
     toString(): string {
         if (this.blocks.length === 0) {
             return 'AND()'
@@ -17,6 +27,10 @@ export default class AndOperator extends BinaryOperator {
         return `(${blocksStr})`
     }
 
+    /**
+     * Creates a deep copy with cloned child blocks.
+     * @returns New AndOperator instance
+     */
     clone(): AndOperator {
         return new AndOperator(this.blocks.map(b => b.clone()))
     }

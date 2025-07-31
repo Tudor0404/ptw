@@ -3,7 +3,13 @@ import {BlockType, MergeState} from '../../types'
 import {success} from '../../utils/result'
 import Field from './Field'
 
+/**
+ * Specific date-time ranges as Unix timestamps.
+ */
 export default class DateTimeField extends Field<DateTimeRange> {
+    /**
+     * @param values - Array of date-time ranges as Unix timestamps
+     */
     constructor(values: DateTimeRange[] = []) {
         super(values, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0, BlockType.FieldDateTime)
     }
@@ -32,6 +38,10 @@ export default class DateTimeField extends Field<DateTimeRange> {
         throw new RangeError('index is out of bounds')
     }
 
+    /**
+     * Returns string representation of date-time field.
+     * @returns String like "DT[1640610000000..1640638800000]"
+     */
     toString(): string {
         if (this.values.length === 0) {
             return 'DT[]'
@@ -40,6 +50,10 @@ export default class DateTimeField extends Field<DateTimeRange> {
         return `DT[${rangesStr}]`
     }
 
+    /**
+     * Creates a deep copy with same date-time ranges.
+     * @returns New DateTimeField instance
+     */
     override clone(): DateTimeField {
         return new DateTimeField([...this.values])
     }
@@ -106,9 +120,6 @@ export default class DateTimeField extends Field<DateTimeRange> {
         return success(false)
     }
 
-    override optimise(): void {
-        throw new Error('Not implemented')
-    }
 
     protected validateValue(value: DateTimeRange): boolean {
         return Number.isInteger(value.start) && Number.isInteger(value.end) && value.start <= value.end

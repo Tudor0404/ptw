@@ -4,6 +4,9 @@ import {ReferenceError} from '../../errors'
 import {generateHash} from '../../utils/hash'
 import {fail} from '../../utils/result'
 
+/**
+ * Reference to another expression in the schedule.
+ */
 export default class Reference implements IBlock {
     public blockGroup: BlockGroup = BlockGroup.Reference
     public blockType: BlockType = BlockType.Reference
@@ -11,15 +14,26 @@ export default class Reference implements IBlock {
     private merge: MergeState = MergeState.DEFAULT
     private _cachedHash: string | null = null
 
+    /**
+     * @param id - ID of the expression to reference
+     */
     constructor(id: string) {
         this.id = id
     }
 
+    /**
+     * Sets the reference ID.
+     * @param id - New reference ID
+     */
     setId(id: string): void {
         this.id = id
         this._invalidateHash()
     }
 
+    /**
+     * Gets the reference ID.
+     * @returns Current reference ID
+     */
     getId(): string {
         return this.id
     }
@@ -33,6 +47,10 @@ export default class Reference implements IBlock {
         return this.merge
     }
 
+    /**
+     * Returns string representation of reference.
+     * @returns String like "REF[expression-id]"
+     */
     toString(): string {
         return `REF[${this.id}]`
     }
@@ -65,6 +83,10 @@ export default class Reference implements IBlock {
         return referenced.block.evaluateTimestamp(unix, schedule)
     }
 
+    /**
+     * Creates a deep copy with same reference ID.
+     * @returns New Reference instance
+     */
     clone(): Reference {
         return new Reference(this.id)
     }
@@ -91,7 +113,6 @@ export default class Reference implements IBlock {
             }))
         }
 
-        // Apply merge state decision logic
         const shouldMerge
             = this.merge !== MergeState.DEFAULT ? this.merge === MergeState.EXPLICIT_ON : (merge ?? true)
 
